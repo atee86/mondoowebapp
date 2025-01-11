@@ -1,2 +1,2 @@
 # mondoowebapp
-Go bassed HTTP web server application
+Go based HTTP web server application listening on port 80
