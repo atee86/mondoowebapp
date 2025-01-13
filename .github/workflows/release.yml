@@ -4,23 +4,33 @@ on:
   release:
     types: [created]
 
+permissions:
+  actions: write
+  contents: write
+
+
 jobs:
   executebuild:
     runs-on: ubuntu-latest
+    outputs:
+      run_id: ${{ steps.build.outputs.run_id }}
     steps:
       - name: Run Application Build
         id: build
         run: |
-          response=$(curl -X POST -H "Accept: application/vnd.github.v3+json" \
-              -u ${{ secrets.GITHUB_TOKEN }} \
+          response=$(curl -s -X POST -H "Accept: application/vnd.github+json" \
+              -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
               https://api.github.com/repos/${{ github.repository }}/actions/workflows/build.yml/dispatches \
               -d '{"ref": "main"}')
-          run_id=$(curl -H "Accept: application/vnd.github+json" \
-              -u ${{ secrets.GITHUB_TOKEN }} \
+          echo $response
+          sleep 5
+          run_id=$(curl -s -H "Accept: application/vnd.github+json" \
+              -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
               https://api.github.com/repos/${{ github.repository }}/actions/runs \
               | jq -r '.workflow_runs[] | select(.head_branch=="main") | .id' \
               | head -n 1)
-          echo "run_id=$run_id" >> $GITHUB_ENV
+          echo "run_id=$run_id" >> $GITHUB_OUTPUT
+          echo "The run id is: $run_id"
   waiting:
     # status Can be one of: completed, action_required, cancelled, failure, neutral, skipped, stale, success, timed_out, in_progress, queued, requested, waiting, pending
     # conclusion Can be one of: action_required, cancelled, failure, neutral, success, skipped, stale, timed_out
@@ -28,16 +38,20 @@ jobs:
     needs: executebuild
     steps:
       - name: Wait for Build Completion
+        env:
+          run_id: ${{ needs.executebuild.outputs.run_id }}
         run: |
           while true; do
-            status=$(curl -H "Accept: application/vnd.github+json" \
-                -u ${{ secrets.GITHUB_TOKEN }} \
-                https://api.github.com/repos/${{ github.repository }}/actions/runs/$RUN_ID \
+            status=$(curl -s -H "Accept: application/vnd.github+json" \
+                -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+                https://api.github.com/repos/${{ github.repository }}/actions/runs/$run_id \
                 | jq -r .status)
-            conclusion=$(curl -H "Accept: application/vnd.github+json" \
-                -u ${{ secrets.GITHUB_TOKEN }} \
-                https://api.github.com/repos/${{ github.repository }}/actions/runs/$RUN_ID \
+            echo "The status of the build ($run_id) is: $status"
+            conclusion=$(curl -s -H "Accept: application/vnd.github+json" \
+                -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+                https://api.github.com/repos/${{ github.repository }}/actions/runs/$run_id \
                 | jq -r .conclusion)
+            echo "The conclusion of the build ($run_id) is: $conclusion"
             if [ "$status" == "completed" ]; then
               if [ "$conclusion" == "success" ]; then
                 break
@@ -45,18 +59,21 @@ jobs:
                 exit 1
               fi
             fi
+            echo "Waiting for build to finish..."
             sleep 30
           done
   release:
     name: Release Binary
     needs: [executebuild, waiting]
     runs-on: ubuntu-latest
+    env:
+      run_id: ${{ needs.executebuild.outputs.run_id }}
     steps:
       - name: Download Build Artifact
         uses: actions/download-artifact@v4
         with:
           name: mondoowebapp
-          run-id: ${{ env.RUN_ID }}
+          run-id: ${{ env.run_id }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Upload Binary to Release
         uses: softprops/action-gh-release@v1
