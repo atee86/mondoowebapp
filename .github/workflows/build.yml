@@ -71,6 +71,7 @@ jobs:
         uses: actions/setup-go@v5.2.0
         with: 
           go-version: ${{ vars.GOVERSION }}
+      #cross compiling: go tool dist list
       - name: Build Go Binary 
         run: |
           GOOS=windows GOARCH=amd64 go build -o bin/mondoowebapp-amd64-windows.exe main.go
