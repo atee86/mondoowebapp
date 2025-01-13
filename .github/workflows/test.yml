@@ -1,0 +1,19 @@
+name: Test Workflow
+
+on:
+  workflow_dispatch:
+
+jobs:
+  testworkflow:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Test Workflow
+        id: test
+        run: |
+          run_id=$(curl -H "Accept: application/vnd.github.v3+json" \
+              -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}"
+              https://api.github.com/repos/${{ github.repository }}/actions/runs \
+              | jq -r '.workflow_runs[] | select(.head_branch=="main") | .id' \
+              | head -n 1)
+          echo "run_id=$run_id" >> $GITHUB_ENV
+          echo "The run id is: $run_id"
