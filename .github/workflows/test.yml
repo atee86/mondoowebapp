@@ -27,5 +27,5 @@ jobs:
       - name: Upload Binary to Release
         uses: softprops/action-gh-release@v2
         with:
-          files: bin/mondoowebapp*
+          files: mondoowebapp*
           tag_name: "v1.0.0"
