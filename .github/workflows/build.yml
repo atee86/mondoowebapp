@@ -80,6 +80,7 @@ jobs:
           GOOS=darwin GOARCH=arm64 go build -o bin/mondoowebapp-arm64-darwin main.go
           GOOS=linux GOARCH=amd64 go build -o bin/mondoowebapp-amd64-linux main.go
           GOOS=linux GOARCH=arm64 go build -o bin/mondoowebapp-arm64-linux main.go
+          CGO_ENABLED=0 GOARCH=amd64 GOOS=linux go build -a -installsuffix cgo -o bin/mondoowebapp-amd64-alpine main.go
           zip -r bin/mondoowebapp-all.zip bin
       - name: Upload Build Artifact 
         uses: actions/upload-artifact@v4.6.0
