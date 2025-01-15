@@ -34,5 +34,4 @@ jobs:
         context: ./bin
         push: true
         tags: ghcr.io/${{ github.repository_owner }}/mondoowebapp-amd64-linux:latest
-        file: mondoowebapp-amd64-linux
- 
+        file: ../mondoowebapp-amd64-linux
