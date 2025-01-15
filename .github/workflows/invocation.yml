@@ -1,0 +1,35 @@
+name: Containerize Release
+
+on:
+  push:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  export:
+    name: "Push release to container"
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Wait for resource upload
+      run: |
+        file_url='https://github.com/atee86/mondoowebapp/releases/latest/download/mondoowebapp-all.zip'
+        wait_interval=30
+        while true; do
+          if wget --spider "$file_url" 2>/dev/null; then 
+            echo "File is available. Starting container build"; 
+            break; 
+          else 
+            echo "File not found. Retrying in $wait_interval seconds..."; 
+          fi
+        done
+    - name: Trigger Container Build
+      run: |
+        curl -X POST \
+        -H "Accept: application/vnd.github+json" \
+        -H "Authorization: token ${{ secrets.PAT_TOKEN }}" \
+        -d '{"event_type": "New Release Automation"}' \
+        https://api.github.com/repos/atee86/mondoocontainer/dispatches
