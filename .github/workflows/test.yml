@@ -1,6 +1,7 @@
 name: Containerize Release
 
 on:
+  push:
   release:
     types: [published]
 
