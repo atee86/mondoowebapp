@@ -25,6 +25,7 @@ jobs:
           else 
             echo "File not found. Retrying in $wait_interval seconds..."; 
           fi
+          sleep $wait_interval
         done
     - name: Trigger Container Build
       run: |
