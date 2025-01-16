@@ -38,9 +38,9 @@ jobs:
 
         port=$(echo "$port" | tr -d '[:space:]')
         command=$(echo "$command" | tr -d '[:space:]')
-        dockerexec=$(docker ps --no-trunc --format 'json' | jq '.["Command"]' | tr -d '\"\\[:space:]')
-        dockerport=$(docker ps --no-trunc --format 'json' | jq '.["Ports"]' | tr -d '\"\\[:space:]' | cut -d'/' -f1)
-        docker ps --no-trunc
+        dockerexec=$(docker ps --no-trunc --format 'json' -f id=$id | jq '.["Command"]' | tr -d '\"\\[:space:]')
+        dockerport=$(docker ps --no-trunc --format 'json' -f id=$id | jq '.["Ports"]' | tr -d '\"\\[:space:]' | cut -d'/' -f1)
+        docker ps --no-trunc -f id=$id
         echo "Docker Command: $dockerexec"
         echo "Docker Port: $dockerport"
         
