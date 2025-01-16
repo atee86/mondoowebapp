@@ -11,6 +11,7 @@ jobs:
   export:
     name: "Push release to container"
     runs-on: ubuntu-latest
+    timeout-minutes: 10
 
     steps:
     - name: Wait for resource upload
