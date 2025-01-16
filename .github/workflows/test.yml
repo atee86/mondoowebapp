@@ -40,7 +40,7 @@ jobs:
         command=$(echo "$command" | tr -d '[:space:]')
         dockerexec=$(docker ps --no-trunc --format 'json' | jq '.["Command"]' | tr -d '\"\\[:space:]')
         dockerport=$(docker ps --no-trunc --format 'json' | jq '.["Ports"]' | tr -d '\"\\[:space:]' | cut -d'/' -f1)
-
+        docker ps --no-trunc
         echo "Docker Command: $dockerexec"
         echo "Docker Port: $dockerport"
         
