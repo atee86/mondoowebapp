@@ -35,6 +35,9 @@ jobs:
         echo "State: $state"
         echo "Command: $command"
         echo "PID: $pid"
+
+        port=$(echo "$port" | tr -d '[:space:]')
+        command=$(echo "$command" | tr -d '[:space:]')
         
         # Check if $port is not 4733
         if [ "$port" -ne "$REQUIRED_PORT" ]; then
