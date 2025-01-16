@@ -7,11 +7,46 @@ jobs:
   test:
     name: "Testing with CNSPEC"
     runs-on: ubuntu-latest
-
+    env:
+      REQUIRED_PORT: "4733"
+      REQUIRED_APP: "./mondoowebapp-amd64-alpine"
     steps:
+    - name: Set up Docker
+      uses: docker/setup-buildx-action@v3
     - name: Wait for installation
       run: |
         bash -c "$(curl -sSL https://install.mondoo.com/sh)"
     - name: Trigger Scan
       run: |
-        cnspec scan local
+        docker image pull ghcr.io/atee86/mondoowebapp-amd64-alpine:latest
+        id=$(docker run -d ghcr.io/atee86/mondoowebapp-amd64-alpine:latest)
+        jsonresult=$(cnquery scan docker $id --json)
+        name=$(echo "$jsonresult" | jq -r '.data | keys[0]')
+        ports=$(echo "$jsonresult" | jq -r --arg name "$name" '.data[$name].values."//local.cnquery.io/run/local-execution/queries/mondoo-linux-active-connections".content."ports.where.list"')
+        processes=$(echo "$jsonresult" | jq -r --arg name "$name" '.data[$name].values."//local.cnquery.io/run/local-execution/queries/mondoo-linux-processes".content."processes.list"')
+        
+        port=$(echo "$ports" | jq -r '.[].port')
+        state=$(echo "$ports" | jq -r '.[].state')
+        
+        command=$(echo "$processes" | jq -r '.[].command')
+        pid=$(echo "$processes" | jq -r '.[].pid')
+        
+        echo "Port: $port"
+        echo "State: $state"
+        echo "Command: $command"
+        echo "PID: $pid"
+        
+        # Check if $port is not 4733
+        if [ "$port" -ne "$REQUIRED_PORT" ]; then
+            echo "Error: Port is not $REQUIRED_PORT"
+            exit 1
+        fi
+        
+        # Check if $command is not "./mondoowebapp-amd64-alpine"
+        if [ "$command" != "$REQUIRED_APP" ]; then
+            echo "Error: Command is not $REQUIRED_APP"
+            exit 1
+        fi
+        
+        echo "All checks passed successfully."
+        docker kill "$id"
