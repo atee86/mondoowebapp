@@ -38,6 +38,11 @@ jobs:
 
         port=$(echo "$port" | tr -d '[:space:]')
         command=$(echo "$command" | tr -d '[:space:]')
+        dockerexec=$(docker ps --no-trunc --format 'json' | jq '.["Command"]' | tr -d '\"\\[:space:]')
+        dockerport=$(docker ps --no-trunc --format 'json' | jq '.["Ports"]' | tr -d '\"\\[:space:]' | cut -d'/' -f1)
+
+        echo "Docker Command: $dockerexec"
+        echo "Docker Port: $dockerport"
         
         # Check if $port is not 4733
         if [ "$port" -ne "$REQUIRED_PORT" ]; then
@@ -48,6 +53,18 @@ jobs:
         # Check if $command is not "./mondoowebapp-amd64-alpine"
         if [ "$command" != "$REQUIRED_APP" ]; then
             echo "Error: Command is not $REQUIRED_APP"
+            exit 1
+        fi
+       
+        # Check if $command is not "./mondoowebapp-amd64-alpine"
+        if [ "$dockerexec" != "$REQUIRED_APP" ]; then
+            echo "Error: Docker Command is not $REQUIRED_APP"
+            exit 1
+        fi
+        
+        # Check if $port is not 4733
+        if [ "$dockerport" -ne "$REQUIRED_PORT" ]; then
+            echo "Error: Docker Port is not $REQUIRED_PORT"
             exit 1
         fi
         
