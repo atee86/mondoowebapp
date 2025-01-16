@@ -29,7 +29,7 @@ jobs:
               https://api.github.com/repos/${{ github.repository }}/actions/runs \
               | jq -r '.workflow_runs[] | select(.head_branch=="main") | .id' \
               | head -n 1)
-          echo "run_id=$run_id" >> $GITHUB_OUTPUT
+          echo "run_id=$run_id" >> "$GITHUB_OUTPUT"
           echo "The run id is: $run_id"
   waiting:
     # status Can be one of: completed, action_required, cancelled, failure, neutral, skipped, stale, success, timed_out, in_progress, queued, requested, waiting, pending
