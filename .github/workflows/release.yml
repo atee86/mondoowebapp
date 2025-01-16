@@ -35,6 +35,7 @@ jobs:
     # status Can be one of: completed, action_required, cancelled, failure, neutral, skipped, stale, success, timed_out, in_progress, queued, requested, waiting, pending
     # conclusion Can be one of: action_required, cancelled, failure, neutral, success, skipped, stale, timed_out
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     needs: executebuild
     steps:
       - name: Wait for Build Completion
